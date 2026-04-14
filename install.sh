@@ -8,6 +8,7 @@
 
 set -e
 
+sudo apt install -y software-properties-common
 sudo add-apt-repository ppa:neovim-ppa/stable -y
 
 sudo apt update
