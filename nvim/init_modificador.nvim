@@ -1,0 +1,109 @@
+call plug#begin('~/.vim/plugged')
+
+" Otros plugins
+Plug 'tpope/vim-sensible'     " Configuración sensata
+Plug 'preservim/nerdtree'     " Explorador de archivos
+Plug 'nvim-treesitter/nvim-treesitter' " Resaltado avanzado y análisis sintáctico
+Plug 'neovim/nvim-lspconfig'  " Configuración de LSP
+Plug 'hrsh7th/nvim-cmp'       " Autocompletado
+Plug 'hrsh7th/cmp-nvim-lsp'   " Fuente LSP para autocompletado
+Plug 'hrsh7th/cmp-buffer'     " Fuente para palabras del buffer actual
+Plug 'hrsh7th/cmp-path'       " Fuente para rutas de archivos
+Plug 'saadparwaiz1/cmp_luasnip'   " Integración con snippets
+Plug 'L3MON4D3/LuaSnip'       " Motor de snippets
+Plug 'rafamadriz/friendly-snippets'  " Snippets predefinidos°
+
+Plug 'lukas-reineke/indent-blankline.nvim' "Es para la identación de nvim
+" Tema Tokyo Night
+Plug 'folke/tokyonight.nvim'  " Tema de colores
+call plug#end()
+
+set number           " Activar los números absolutos
+set list 
+set listchars=tab:▸\ ,trail:·
+"modificar las llaves de nvim 
+nnoremap <leader>r :w<CR>:!python3 %<CR>
+
+" Configuración de Tokyo Night (opcional)
+let g:tokyonight_style = "night"  "storm, day o moon
+let g:tokyonight_transparent = 1  
+let g:tokyonight_terminal_colors = 1  
+" Aplicar el tema
+colorscheme tokyonight
+
+hi Normal guibg=NONE ctermbg=NONE
+hi NormalNC guibg=NONE ctermbg=NONE
+
+" Configuración de LSP
+lua << EOF
+local cmp = require('cmp')
+
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      require('luasnip').lsp_expand(args.body) -- Para usar snippets
+    end,
+  },
+  mapping = {
+    ["<C-Space>"] = cmp.mapping.complete(),  -- Mostrar las sugerencias
+    ["<CR>"] = cmp.mapping.confirm({ select = true }), -- Confirmar sugerencia
+    ["<Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()  -- Seleccionar el siguiente elemento
+      else
+        fallback()  -- Si no hay sugerencias, hacer lo que normalmente hace Tab
+      end
+    end, { 'i', 's' }),  -- En los modos de inserción ('i') y de selección ('s')
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()  -- Seleccionar el elemento anterior
+      else
+        fallback()  -- Si no hay sugerencias, hacer lo que normalmente hace Shift+Tab
+      end
+    end, { 'i', 's' }), 
+  },
+  sources = {
+    { name = 'nvim_lsp' },  -- Fuente LSP
+    { name = 'buffer' },    -- Palabras del buffer actual
+    { name = 'path' },      -- Rutas de archivos
+    { name = 'luasnip' },   -- Integración con snippets
+  },
+})
+
+-- Configuración de LSP para Python (Pyright como ejemplo)
+local lspconfig = require('lspconfig')
+lspconfig.pyright.setup{}  -- Puedes añadir más servidores LSP aquí
+
+-- Configuración de Treesitter
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = { "python"}, 
+  highlight = {
+    enable = true,  -- Habilitar resaltado de sintaxis
+  },
+}
+
+EOF
+
+" Mostrar líneas de indentación
+let g:indent_blankline_char = '│'
+let g:indent_blankline_show_trailing_blankline_indent = v:false
+let g:indent_blankline_show_first_indent_level = v:true
+let g:indent_blankline_use_treesitter = v:true
+let g:indent_blankline_show_current_context = v:true
+
+" Activar el plugin
+autocmd VimEnter * IndentBlanklineEnable
+
+
+lua << EOF
+require("ibl").setup {
+    indent = {
+        char = "▏",
+    },
+    scope = {
+        enabled = true,
+    },
+}
+EOF
+
+
