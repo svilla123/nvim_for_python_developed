@@ -6,7 +6,9 @@
 
 #!/bin/bash
 
-set -e 
+set -e
+
+sudo add-apt-repository ppa:neovim-ppa/stable -y
 
 sudo apt update
 
@@ -35,7 +37,7 @@ fi
 
 echo "update plugings"
 
-nvim --headbless "+Lazy! sync" +qa
+nvim --headless "+Lazy! sync" +qa
 
 echo "install complete, congratulations!!!"
 echo "any question you contact me josesaulvillaperez@gmail.com"
