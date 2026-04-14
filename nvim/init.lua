@@ -1,15 +1,19 @@
--- 1. Configuracion Global (Opciones de Vim)
-vim.opt.number = true
-vim.opt.relativenumber = false -- Números relativos
-vim.opt.tabstop = 4           -- Un tab son 4 espacios
-vim.opt.shiftwidth = 4        -- Sangría de 4 espacios
-vim.opt.expandtab = true      -- Usa espacios en lugar de tabs
-vim.opt.clipboard = "unnamedplus" -- Permite que el portapapeles de Nvim y el del sistema compartan datos.
+-- ========================================================================== --
+--  NEOVIM CONFIGURATION
+--  Optimized for SSH, VMs, and DevOps operations
+-- ========================================================================== --
 
--- 2. Definición del Directorio de Configuración
-local config_path = vim.fn.stdpath('config') .. '/lua'
+-- 1. Global Options (Vim Options)
+vim.g.mapleader = " "              -- Define la barra espaciadora como Leader
+vim.opt.number = true              -- Muestra números de línea
+vim.opt.relativenumber = false     -- Números absolutos (mejor para SSH)
+vim.opt.tabstop = 4                -- Un tab son 4 espacios
+vim.opt.shiftwidth = 4             -- Sangría de 4 espacios
+vim.opt.expandtab = true           -- Usa espacios en lugar de tabs
+vim.opt.clipboard = "unnamedplus"  -- Sincroniza con el portapapeles del sistema
+vim.opt.termguicolors = true       -- Colores reales en la terminal
 
--- 3. Definición del Gestor de Plugins
+-- 2. Plugin Manager Bootstrap (Lazy.nvim)
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
@@ -17,21 +21,38 @@ if not vim.loop.fs_stat(lazypath) then
     "clone",
     "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- última versión
+    "--branch=stable",
     lazypath,
   })
 end
 vim.opt.rtp:prepend(lazypath)
 
--- 4. Carga de Plugins
--- La lista real de plugins ruta en 'lua/plugins.lua'
-require("lazy").setup("plugins")
+-- 3. Load Plugins
+require("lazy").setup("plugins", {
+    defaults = { lazy = true }, -- Carga perezosa para mayor velocidad en VMs
+})
 
--- 5. Mapeos (Bindings, osea comandos con teclas)
+-- 4. Keybindings (Mapeos)
 vim.api.nvim_set_keymap('n', '<leader>r', ':w<CR>:!python3 %<CR>', { noremap = true, silent = true })
 
--- 6. Configuración Modular
-require("config.lsp")         -- Carga la configuración de LSP (pyright)
-require("config.cmp")         -- Carga la configuración de nvim-cmp
-require("config.treesitter")  -- Carga la configuración de Treesitter
--- require("config.otros")     -- Aquí podrías poner otras configuraciones 
+-- 5. Modular Configuration with Safe Loading (pcall)
+local function safe_require(module)
+    local ok, m = pcall(require, module)
+    if not ok then
+        -- Opcional: print("Error loading: " .. module) 
+        return nil 
+    end
+    return m
+end
+
+-- Carga modular segura
+safe_require("config.lsp")         -- Configuración de LSP
+safe_require("config.cmp")         -- Configuración de Autocompletado
+safe_require("config.treesitter")  -- Configuración de Syntax Highlighting
+
+-- 6. Fix for Neovim 0.11+ (LSP Deprecation)
+-- Si algún módulo usa require('lspconfig'), esto asegura compatibilida
+if vim.lsp.config then
+   
+    package.loaded['lspconfig'] = vim.lsp.config
+end
