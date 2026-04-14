@@ -1,0 +1,18 @@
+# Ignorar archivos temporales de Neovim
+.netrwhist
+undo/
+*.swp
+*.swo
+
+# Ignorar base de datos de plugins local (Si llegaste a meterla al repo)
+.local/
+.cache/
+
+# Archivos que genera el mismo git
+nvim/lazy-lock.json
+nvim/plugin/
+nvim/.netrwhist
+**/*.swp
+
+# OS junk
+.DS_Store
