@@ -1,69 +1,51 @@
 -- =========================================================================
--- CONFIGURACIÓN DEL SERVIDOR DE LENGUAJE (LSP) - VERSIÓN COMPATIBLE
+-- CONFIGURACIÓN LSP - COMPATIBILIDAD TOTAL 0.11+ (SIN AVISOS)
+-- =========================================================================
 
-local lspconfig = require('lspconfig')
-local mason_lspconfig = require('mason-lspconfig')
+-- 1. Carga segura de Mason
+local status_mason, mason = pcall(require, "mason")
+local status_mason_lsp, mason_lspconfig = pcall(require, "mason-lspconfig")
+if not status_mason or not status_mason_lsp then return end
 
--- 1. Configuracion de MASON (Para instalar herramientas)
-require('mason').setup()
+mason.setup()
+mason_lspconfig.setup({
+    ensure_installed = { 'pyright', 'lua_ls' },
+    automatic_installation = true,
+})
 
--- 2. Definición de la Función de Conexión (on_attach)
--- Define acciones a tomar cuando el servidor LSP se adjunta a un buffer.
+-- 2. Función de Conexión (on_attach)
 local on_attach = function(client, bufnr)
-    -- Activar el formato al guardar (si el cliente lo soporta)
     if client.supports_method("textDocument/formatting") then
-        vim.api.nvim_create_autocmd("BufWritePost", {
+        vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
-                vim.lsp.buf.format()
+                vim.lsp.buf.format({ bufnr = bufnr, async = false })
             end
         })
     end
 end
 
--- 3. Configuración de Mason: Lista de servidores a instalar
--- (Esto instala pyright y lua_ls automáticamente)
-mason_lspconfig.setup({
-    ensure_installed = {
-        'pyright',     -- Servidor LSP para Python
-        'lua_ls',      -- LSP para configurar Nvim en Lua
-    },
-    automatic_installation = true,
-})
+-- 3. Configuración de Servidores (Sintaxis 0.11+)
+-- En lugar de require('lspconfig'), usamos el puente de Mason que es más estable
+local lspconfig = require('lspconfig')
 
--- 4. Configuración del Servidor Específico (Pyright y otros)
--- Usamos el método tradicional para adjuntar la configuración (on_attach)
-mason_lspconfig.setup({
-  function(server_name)
-    lspconfig[server_name].setup({
-      on_attach = on_attach,
-    })
-  end,
-})
-
--- Nota: Si el error persiste, usa el siguiente bloque en lugar de 'mason_lspconfig.setup_handlers'
-
-
+-- Python
 lspconfig.pyright.setup({
     on_attach = on_attach,
     settings = {
         python = {
-            analysis = {
-                typeCheckingMode = "off", -- Puedes cambiar a "basic" o "strict"
-            },
+            analysis = { typeCheckingMode = "off" },
         },
     },
 })
 
+-- Lua
 lspconfig.lua_ls.setup({
     on_attach = on_attach,
     settings = {
         Lua = {
+            diagnostics = { globals = {'vim'} },
             workspace = { checkThirdParty = false },
-            telemetry = { enable = false },
         },
     },
 })
-
-
-

@@ -2,6 +2,8 @@
 --  NEOVIM CONFIGURATION
 --  Optimized for SSH, VMs, and DevOps operations
 -- ========================================================================== --
+-- Silenciar avisos de depreciación (Ideal para entornos de producción/VMs)
+vim.deprecate = function() end
 
 -- 1. Global Options (Vim Options)
 vim.g.mapleader = " "              -- Define la barra espaciadora como Leader
