@@ -1,47 +1,54 @@
-####There_script#######################
-# there script, going to install ######
-# a developed to nvim for python, #####
-# for everthing used to debian ########
-# #####################################
-
 #!/bin/bash
+set -e 
 
-set -e
+echo "########################################################"
+echo "###  Neovim IDE Installer for Python & Debian        ###"
+echo "########################################################"
 
-sudo apt install -y software-properties-common
-sudo add-apt-repository ppa:neovim-ppa/stable -y
-
+echo "Updating system and installing base dependencies..."
 sudo apt update
+sudo apt install -y git curl unzip ripgrep fzf python3 python3-pip python3-venv nodejs npm build-essential
 
-sudo apt install -y neovim
+# --- NEOVIM INSTALLATION (Binary Method for Debian) ---
+# Since Debian 12 doesn't support Ubuntu PPAs
+echo "Downloading latest stable Neovim..."
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+sudo rm -rf /opt/nvim
+sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+# Create a symbolic link so 'nvim' command works globally
+sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
 
-sudo apt install -y \
-    nvim git curl unzip ripgrep fzf \
-    python3 python3-pip python3-venv \
-    nodejs npm \
-    build-essential
+echo "Installing Python support for Neovim..."
+# Using --break-system-packages for Debian 12 compatibility
+pip3 install --user pynvim --break-system-packages || pip3 install --user pynvim
 
-echo "install neovim to python enviorement"
-
+# --- CONFIGURATION ---
+echo "Setting up configuration files..."
 mkdir -p ~/.config 
 rm -rf ~/.config/nvim/ 
 
-cp -r ./nvim/ ~/.config/nvim
+# Check if your local
+if [ -d "./nvim" ]; then
+    cp -r ./nvim/ ~/.config/nvim
+    echo "Configuration folder copied successfully."
+else
+    echo "Warning: Local ./nvim folder not found. Creating a blank one."
+    mkdir -p ~/.config/nvim
+fi
 
-echo "install to pluggins"
-
-AZY_PATH="$HOME/.local/share/nvim/lazy/lazy.nvim"
+# --- PLUGINS
+echo "Installing Lazy.nvim plugin manager..."
+LAZY_PATH="$HOME/.local/share/nvim/lazy/lazy.nvim"
 
 if [ ! -d "$LAZY_PATH" ]; then
   git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable "$LAZY_PATH"
 fi
 
-echo "update plugings"
-
+echo "Syncing plugins..."
+# Fixed
 nvim --headless "+Lazy! sync" +qa
 
-echo "install complete, congratulations!!!"
-echo "any question you contact me josesaulvillaperez@gmail.com"
-
-
-
+echo "--------------------------------------------------"
+echo "Installation complete, congratulations!!!"
+echo "Any questions? Contact me: josesaulvillaperez@gmail.com"
+echo "--------------------------------------------------"
