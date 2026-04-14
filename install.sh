@@ -10,6 +10,8 @@ set -e
 
 sudo apt update
 
+sudo apt install -y neovim
+
 sudo apt install -y \
     nvim git curl unzip ripgrep fzf \
     python3 python3-pip python3-venv \
