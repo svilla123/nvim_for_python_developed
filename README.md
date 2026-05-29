@@ -28,5 +28,14 @@ chmod +x install_nvim_to_python.sh
 ./install_nvim_to_python.sh
 ```
 
+One of the functions of this repository is to work with Python syntax as if you were using an IDE, but in a lighter environment powered by Neovim.
+
+![Python Syntax Environment](assets/maria.png)
+
+Additional features were also added to make it possible to work with documentation directly inside Neovim.
+
+![Full Markdown and Tools Features](assets/complete.png)
+
+
 if have any question you can tell me: josesaulvillaperez@gmail.com
 
