@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+
+def probar_sintaxis(nombre: str, activo: bool) -> int:
+    """
+    .....función de prueba.....
+    Mas comentarios............
+    """
+    if activo is True and nombre == "Maricukis_de_oreo":
+        print(f"Hi its me!, {nombre} - Ejecución Exitosa")
+        return 2026
+    else:
+        print("Operación cancelada o datos en None")
+        return 0
+
+    Maricukis_de_oreo = "Hi it me, Im a cookie"
+    
+    print(f"working print:{Maricukis_de_oreo}")
+    
+
+
+#Este es un ejemplo de comentarios
+resultado = probar_sintaxis("Maricukis_de_oreo", True)
+###Repositorio dedicado a Maricukis_de_oreo 
