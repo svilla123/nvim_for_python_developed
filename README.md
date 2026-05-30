@@ -30,7 +30,7 @@ chmod +x install_nvim_to_python.sh
 
 One of the functions of this repository is to work with Python syntax as if you were using an IDE, but in a lighter environment powered by Neovim.
 
-![Python Syntax Environment](assets/Maria.png)
+![Python Syntax Environment](assets/Maria.gif)
 
 Additional features were also added to make it possible to work with documentation directly inside Neovim.
 
