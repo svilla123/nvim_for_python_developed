@@ -1,4 +1,4 @@
-# Welcome to "script_nvim_for_python3"
+# Welcome to "nvim_for_python3"
 
 You can install this script and it will set up everything automatically. It is compatible with **Debian**, **Ubuntu**, and any other Linux distribution based on Debian.
 
