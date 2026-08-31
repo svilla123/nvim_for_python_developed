@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+###This is a example
 
 import os
 import subprocess
@@ -23,4 +24,4 @@ def probar_sintaxis(nombre: str, activo: bool) -> int:
 
 #Este es un ejemplo de comentarios
 resultado = probar_sintaxis("Maricukis_de_oreo", True)
-###Repositorio dedicado a Maricukis_de_oreo 
+
