@@ -36,15 +36,11 @@ return {
   -- =========================================================================
   {
       'nvim-treesitter/nvim-treesitter',
-      build = ':TSUpdate', 
-      config = function()
-          require'nvim-treesitter.configs'.setup {
-              -- Añadimos sql para el nuevo equipo
-              ensure_installed = { "python", "lua", "vim", "sql", "dockerfile" }, 
-              highlight = { enable = true },
-              indent = { enable = true },
-          }
-      end,
+      -- Rama de compatibilidad para la API nvim-treesitter.configs.
+      branch = 'master',
+      lazy = false,
+      build = ':TSUpdate',
+      config = function() require('config.treesitter') end,
   },
 
   {
@@ -71,11 +67,14 @@ return {
   {
     'williamboman/mason-lspconfig.nvim',
     dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig' },
-    opts = {
-        -- Esto asegura que los modelos de autocompletado estén en cualquier equipo
-        ensure_installed = { "pyright", "lua_ls", "sqls" }, 
-        automatic_installation = true,
-    },
+    config = function()
+        -- Configurar LSP antes de habilitar los servidores instalados.
+        require('config.lsp')
+        require('mason-lspconfig').setup({
+            ensure_installed = { 'pyright', 'lua_ls' },
+            automatic_enable = false,
+        })
+    end,
   },
 
   'neovim/nvim-lspconfig',
@@ -91,34 +90,7 @@ return {
       'L3MON4D3/LuaSnip',
       'rafamadriz/friendly-snippets',
     },
-    config = function()
-      local cmp = require('cmp')
-      local luasnip = require('luasnip')
-      require("luasnip.loaders.from_vscode").lazy_load() -- Carga friendly-snippets
-
-      cmp.setup({
-        snippet = {
-          expand = function(args) luasnip.lsp_expand(args.body) end,
-        },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }),
-          ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then luasnip.expand_or_jump()
-            else fallback() end
-          end, { 'i', 's' }),
-        }),
-        sources = cmp.config.sources({
-          { name = 'nvim_lsp' }, -- Sugerencias del servidor (Python/SQL)
-          { name = 'luasnip' },  -- Fragmentos de código
-          { name = 'buffer' },   -- Palabras en el archivo actual
-          { name = 'path' },     -- Rutas de archivos
-        })
-      })
-    end
+    config = function() require('config.cmp') end,
   },
 
   {
