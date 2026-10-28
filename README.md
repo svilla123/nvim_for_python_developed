@@ -1,41 +1,146 @@
-# Welcome to "nvim_for_python3"
+# Neovim para Python en Debian y Ubuntu
 
-You can install this script and it will set up everything automatically. It is compatible with **Debian**, **Ubuntu**, and any other Linux distribution based on Debian.
+Configuración de Neovim con autocompletado, diagnóstico, snippets, exploración de archivos y resaltado de código. Requiere **Neovim 0.11.3 o superior**, Internet y un usuario con acceso a `sudo` durante la instalación. El instalador admite Linux x86_64 y arm64; se ha preparado para Debian Trixie. Otras versiones de Debian/Ubuntu pueden necesitar ajustes de dependencias o del binario.
 
----
+## Diagnóstico antes de instalar
 
-## Installation Steps
+`check_system.sh` revisa el equipo y muestra `[OK]`, `[FALTA]` o `[AVISO]`, con la función de cada herramienta. **No instala nada ni solicita contraseñas**. Al final genera un comando APT que contiene solo los paquetes detectados como ausentes, sin duplicados.
 
-To get your environment ready, you just need to run the following commands in your terminal:
+Antes de clonar, puedes descargar [check_system.sh](https://raw.githubusercontent.com/svilla123/nvim_for_python_developed/fix/debian-neovim-installation/check_system.sh) con el navegador y ejecutarlo desde la carpeta donde lo guardaste:
 
-### 1. Clone the repository
 ```bash
-git clone [https://github.com/svilla123/nvim_for_python_developed.git](https://github.com/svilla123/nvim_for_python_developed.git) ~/.config/nvim
+bash check_system.sh --bootstrap
 ```
 
-### 2. Navigate to the Neovim directory
+Si ya tienes curl, también puedes descargarlo desde la terminal (descargar primero permite revisar el código antes de ejecutarlo):
+
 ```bash
-cd ~/.config/nvim/ 
+curl -fL https://raw.githubusercontent.com/svilla123/nvim_for_python_developed/fix/debian-neovim-installation/check_system.sh -o check_system.sh
+bash check_system.sh --bootstrap
 ```
 
-### 3. Grant execution permissions to the script
+Este modo comprueba Git, curl, certificados CA, APT, arquitectura y la presencia de sudo si corresponde. Si falta Git o curl, muestra cómo instalarlos; no puede comprobar descargas ni permisos reales solo porque el comando exista.
+
+Después de clonar, ejecuta la revisión completa:
+
 ```bash
-chmod +x install_nvim_to_python.sh
+cd ~/nvim_for_python_developed
+bash check_system.sh
 ```
 
-### 4. Run the installation script 
+Revisa compilador, make, descompresores, ripgrep, fzf, Python/pip/venv, Node/npm y el arranque de Neovim >= 0.11.3. Neovim ausente o antiguo se informa como aviso porque el instalador puede descargarlo. No exige Go, Rust, Ruby, PHP ni Java para esta configuración Python/Lua.
+
+Códigos de salida: `0` = comprobaciones obligatorias correctas; `1` = requisitos pendientes; `2` = argumentos incorrectos. Un resultado correcto **no garantiza** que funcione APT, Internet, Mason o cada plugin. Un Python de Conda/pyenv puede requerir instalar sus módulos dentro de ese entorno en lugar de usar paquetes de Debian.
+
+## Instalación
+
+Ejecuta como tu usuario habitual, sin anteponer `sudo` al script:
+
+```bash
+sudo apt update
+sudo apt install git
+git clone https://github.com/svilla123/nvim_for_python_developed.git ~/nvim_for_python_developed
+cd ~/nvim_for_python_developed
+bash install_nvim_to_python.sh
+nvim
 ```
-./install_nvim_to_python.sh
+
+También puedes clonar directamente en `~/.config/nvim` si esa carpeta no existe. El script reconoce ese caso y no mueve el repositorio sobre sí mismo.
+
+### Qué hace el instalador
+
+1. Instala Git, curl, herramientas de compilación, ripgrep, fzf, Python/pip/venv y Node/npm mediante APT. No altera repositorios ni ignora errores de firmas.
+2. Conserva Neovim si es 0.11.3 o superior. Si falta o es antiguo, descarga la versión estable oficial y comprueba que arranque antes de instalarla en una carpeta nueva de `/opt`. Un enlace en `/usr/local/bin/nvim` selecciona ese ejecutable; conserva cualquier enlace o ejecutable local anterior con un sufijo de respaldo.
+3. Copia `init.lua`, `lua/` y el archivo de versiones al directorio de configuración (`$XDG_CONFIG_HOME/nvim` o `~/.config/nvim`). Si existe una configuración diferente, la mueve a un respaldo con fecha. No copia el antiguo enlace `nvim` del repositorio ni borra respaldos previos.
+4. Instala plugins y restaura los commits de `lazy-lock.json`. Mason y Treesitter pueden continuar descargando servidores y analizadores durante el primer inicio; revisa sus resultados.
+
+El script no crea entornos virtuales para tus proyectos. Para uno nuevo:
+
+```bash
+mkdir -p ~/Proyecto_AI
+cd ~/Proyecto_AI
+python3 -m venv .venv
+source .venv/bin/activate
+nvim main.py
 ```
 
-One of the functions of this repository is to work with Python syntax as if you were using an IDE, but in a lighter environment powered by Neovim.
+## Características
 
-![Python Syntax Environment](assets/Maria.gif)
+| Función | Herramientas |
+|---|---|
+| Plugins y versiones reproducibles | Lazy.nvim y `lazy-lock.json` |
+| Autocompletado | nvim-cmp: LSP, palabras, rutas y snippets |
+| Snippets | LuaSnip y friendly-snippets |
+| Python y Lua | Pyright y lua_ls, instalados mediante Mason |
+| Resaltado y sangría estructural | nvim-treesitter |
+| Archivos | nvim-tree |
+| Búsqueda | Telescope y ripgrep |
+| Cambios y autoría Git | Gitsigns |
+| Apariencia | TokyoNight transparente, lualine e indent-blankline |
+| Markdown | render-markdown y analizadores Markdown |
 
-Additional features were also added to make it possible to work with documentation directly inside Neovim.
+Treesitter usa deliberadamente la rama archivada `master`, fijada por el lockfile, porque esta configuración utiliza `nvim-treesitter.configs`. No cambies a `main` sin migrar también la configuración: su API es distinta. Es una decisión de compatibilidad, no una promesa de mantenimiento futuro de esa rama.
 
-![Full Markdown and Tools Features](assets/complete.png)
+## Organización
 
+- `init.lua`: opciones básicas, ejecución de Python y arranque de Lazy.
+- `lua/plugins.lua`: declaraciones y carga de cada plugin.
+- `lua/config/lsp.lua`: configuración moderna con `vim.lsp.config` y `vim.lsp.enable`.
+- `lua/config/cmp.lua`: única configuración del autocompletado.
+- `lua/config/treesitter.lua`: única configuración de los analizadores.
 
-if have any question you can tell me: josesaulvillaperez@gmail.com
+## Atajos
 
+`<leader>` conserva el valor predeterminado de Neovim: la barra invertida `\`.
+
+| Atajo | Acción |
+|---|---|
+| `\e` | Abrir/cerrar el explorador |
+| `\ff` | Buscar archivos |
+| `\r` | Guardar y ejecutar el archivo con `python3`; activa antes el entorno virtual |
+| `Ctrl+Espacio` | Mostrar autocompletado |
+| `Tab` / `Shift+Tab` | Navegar sugerencias o campos del snippet |
+| `Enter` | Confirmar sugerencia |
+
+El formateo al guardar se activa solo si el servidor LSP lo admite. **Pyright no proporciona formateo**; necesitarás un formateador aparte si lo deseas. El portapapeles compartido depende de un proveedor compatible con tu terminal y sesión; no se garantiza a través de SSH.
+
+## Comprobación y errores habituales
+
+```bash
+nvim --version
+python3 -m pip --version
+```
+
+Dentro de Neovim:
+
+```vim
+:checkhealth
+:Mason
+:checkhealth vim.lsp
+```
+
+- **`sqls` falla:** no se instala de manera predeterminada. El analizador `sql` de Treesitter solo colorea SQL y es independiente del servidor `sqls`. Para añadir este último, revisa sus requisitos en `:Mason` y actívalo con `vim.lsp.enable('sqls')`.
+- **Faltan Go, Ruby, Java o PHP:** Mason revisa múltiples ecosistemas; no tienes que instalarlos todos para trabajar con Python. Importa que el servidor deseado se instale y arranque.
+- **LuaRocks/hererocks:** esta configuración desactiva esa integración porque los plugins incluidos no la necesitan.
+- **`nvim-treesitter.configs` no existe:** verifica `branch = 'master'` y ejecuta `:Lazy restore` para aplicar el lockfile. Reinicia Neovim.
+- **Error GPG en APT:** corrige la clave del repositorio señalado o deshabilita conscientemente ese repositorio. No omitas la verificación de firmas.
+- **Snippets con transformaciones:** algunas funciones avanzadas de LuaSnip requieren `jsregexp`; no es necesario para editar Python ni para snippets básicos.
+
+Para volver a los commits registrados, usa `:Lazy restore`. `:Lazy update` cambia versiones y el lockfile: revisa y prueba los cambios antes de confirmarlos en Git.
+
+## Validación
+
+Comprobación de sintaxis del instalador:
+
+```bash
+bash -n install_nvim_to_python.sh
+bash -n check_system.sh
+python3 -m unittest discover -s tests -v
+```
+
+Las pruebas del diagnóstico simulan herramientas presentes y ausentes, módulos Python faltantes, arquitectura no admitida y deduplicación de paquetes, sin ejecutar APT ni usar Internet.
+
+El resultado de instalación en cada equipo debe verificarse con `:Mason` y un archivo Python abierto: los paquetes externos requieren descargas y pueden fallar por red o dependencias.
+
+![Entorno Python](assets/Maria.gif)
+![Markdown y herramientas](assets/complete.png)

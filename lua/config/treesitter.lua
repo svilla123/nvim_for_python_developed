@@ -5,12 +5,10 @@
 -- Carga el módulo de configuración de Treesitter
 require('nvim-treesitter.configs').setup {
     -- Asegura que los parsers (analizadores sintácticos) para estos lenguajes estén instalados.
-    -- El comando ':TSUpdate' los instalará.
-    ensure_installed = { 
-        "python", -- Esencial para Pythonistas
-        "lua",    -- Esencial para configurar Nvim
-        "vim",    -- Útil para archivos .vim
-        "markdown",
+    -- ensure_installed instala los que faltan; :TSUpdate actualiza los existentes.
+    ensure_installed = {
+        "python", "lua", "vim", "vimdoc", "markdown", "markdown_inline",
+        "sql", "dockerfile",
     },
 
     -- Opciones principales:
