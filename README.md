@@ -2,6 +2,36 @@
 
 Configuración de Neovim con autocompletado, diagnóstico, snippets, exploración de archivos y resaltado de código. Requiere **Neovim 0.11.3 o superior**, Internet y un usuario con acceso a `sudo` durante la instalación. El instalador admite Linux x86_64 y arm64; se ha preparado para Debian Trixie. Otras versiones de Debian/Ubuntu pueden necesitar ajustes de dependencias o del binario.
 
+## Diagnóstico antes de instalar
+
+`check_system.sh` revisa el equipo y muestra `[OK]`, `[FALTA]` o `[AVISO]`, con la función de cada herramienta. **No instala nada ni solicita contraseñas**. Al final genera un comando APT que contiene solo los paquetes detectados como ausentes, sin duplicados.
+
+Antes de clonar, puedes descargar [check_system.sh](https://raw.githubusercontent.com/svilla123/nvim_for_python_developed/fix/debian-neovim-installation/check_system.sh) con el navegador y ejecutarlo desde la carpeta donde lo guardaste:
+
+```bash
+bash check_system.sh --bootstrap
+```
+
+Si ya tienes curl, también puedes descargarlo desde la terminal (descargar primero permite revisar el código antes de ejecutarlo):
+
+```bash
+curl -fL https://raw.githubusercontent.com/svilla123/nvim_for_python_developed/fix/debian-neovim-installation/check_system.sh -o check_system.sh
+bash check_system.sh --bootstrap
+```
+
+Este modo comprueba Git, curl, certificados CA, APT, arquitectura y la presencia de sudo si corresponde. Si falta Git o curl, muestra cómo instalarlos; no puede comprobar descargas ni permisos reales solo porque el comando exista.
+
+Después de clonar, ejecuta la revisión completa:
+
+```bash
+cd ~/nvim_for_python_developed
+bash check_system.sh
+```
+
+Revisa compilador, make, descompresores, ripgrep, fzf, Python/pip/venv, Node/npm y el arranque de Neovim >= 0.11.3. Neovim ausente o antiguo se informa como aviso porque el instalador puede descargarlo. No exige Go, Rust, Ruby, PHP ni Java para esta configuración Python/Lua.
+
+Códigos de salida: `0` = comprobaciones obligatorias correctas; `1` = requisitos pendientes; `2` = argumentos incorrectos. Un resultado correcto **no garantiza** que funcione APT, Internet, Mason o cada plugin. Un Python de Conda/pyenv puede requerir instalar sus módulos dentro de ese entorno en lugar de usar paquetes de Debian.
+
 ## Instalación
 
 Ejecuta como tu usuario habitual, sin anteponer `sudo` al script:
@@ -104,7 +134,11 @@ Comprobación de sintaxis del instalador:
 
 ```bash
 bash -n install_nvim_to_python.sh
+bash -n check_system.sh
+python3 -m unittest discover -s tests -v
 ```
+
+Las pruebas del diagnóstico simulan herramientas presentes y ausentes, módulos Python faltantes, arquitectura no admitida y deduplicación de paquetes, sin ejecutar APT ni usar Internet.
 
 El resultado de instalación en cada equipo debe verificarse con `:Mason` y un archivo Python abierto: los paquetes externos requieren descargas y pueden fallar por red o dependencias.
 
